@@ -363,6 +363,50 @@ class QuanLyAnime:
             self.danhSachHienThiHienTai.sort(key=lambda x: int(x['so_tap']) if x['so_tap'] != 'N/A' else 0, reverse=True)
         self.hienThiLuoiAnime(self.danhSachHienThiHienTai)
 
+    def thayDoiDiemSo(self, anime):
+        cuaSoDiemSo = tk.Toplevel(self.cuaSo)
+        cuaSoDiemSo.title(f"Thay đổi điểm số cho {anime['tieu_de']}")
+        cuaSoDiemSo.geometry("300x150")
+        ttk.Label(cuaSoDiemSo, text=f"Điểm số hiện tại: {anime['diem_so']}", font=('Arial', 12)).pack(pady=10)
+        ttk.Label(cuaSoDiemSo, text="Nhập điểm số mới (0-10):").pack()
+        oNhapDiemSo = ttk.Entry(cuaSoDiemSo)
+        oNhapDiemSo.pack(pady=5)
+
+        def capNhatDiemSo():
+            diemSoMoi = oNhapDiemSo.get()
+            try:
+                diemSoMoi = float(diemSoMoi)
+                if not 0 <= diemSoMoi <= 10:
+                    messagebox.showerror("Lỗi", "Điểm số phải nằm trong khoảng từ 0 đến 10!")
+                    return
+            except ValueError:
+                messagebox.showerror("Lỗi", "Vui lòng nhập một số hợp lệ!")
+                return
+
+            # Cập nhật điểm số trong danh sách hiện tại
+            for a in self.danhSachHienThiHienTai:
+                if a['tieu_de'] == anime['tieu_de']:
+                    a['diem_so'] = str(diemSoMoi)
+                    break
+
+            # Cập nhật điểm số trong du_lieu_anime.json
+            try:
+                with open('du_lieu_anime.json', 'r') as f:
+                    tatCaAnime = json.load(f)
+                for a in tatCaAnime:
+                    if a['tieu_de'] == anime['tieu_de']:
+                        a['diem_so'] = str(diemSoMoi)
+                        break
+                with open('du_lieu_anime.json', 'w') as f:
+                    json.dump(tatCaAnime, f, indent=4)
+                messagebox.showinfo("Thành công", f"Đã cập nhật điểm số cho {anime['tieu_de']} thành {diemSoMoi}!")
+                cuaSoDiemSo.destroy()
+                self.hienThiLuoiAnime(self.danhSachHienThiHienTai)  # Làm mới giao diện
+            except Exception as e:
+                messagebox.showerror("Lỗi", f"Không thể cập nhật điểm số: {str(e)}")
+
+        ttk.Button(cuaSoDiemSo, text="Cập nhật", command=capNhatDiemSo).pack(pady=10)
+
     def hienThiLuoiAnime(self, danhSachAnime):
         for widget in self.khungCoTheCuon.winfo_children():
             widget.destroy()
@@ -399,9 +443,13 @@ class QuanLyAnime:
             ttk.Label(khungThongTin, text="Số tập: ", style='TieuDe.TLabel').pack(side='left', padx=5)
             ttk.Label(khungThongTin, text=anime.get('so_tap', 'N/A')).pack(side='left')
 
+            khungNut = ttk.Frame(khungVien)
+            khungNut.pack(pady=5)
             laYeuThich = anime['tieu_de'] in self.danhSachYeuThichNguoiDungHienTai
-            tk.Button(khungVien, text="♥" if laYeuThich else "♡", command=lambda a=anime: self.batTatYeuThich(a),
-                      relief="flat", font=("Arial", 12), fg="red" if laYeuThich else "gray", bg="white", width=2, height=1).pack(pady=5)
+            tk.Button(khungNut, text="♥" if laYeuThich else "♡", command=lambda a=anime: self.batTatYeuThich(a),
+                      relief="flat", font=("Arial", 12), fg="red" if laYeuThich else "gray", bg="white", width=2, height=1).pack(side='left', padx=5)
+            if self.vaiTroHienTai == "admin":
+                ttk.Button(khungNut, text="Thay đổi điểm số", command=lambda a=anime: self.thayDoiDiemSo(a)).pack(side='left', padx=5)
 
             cot += 1
             if cot >= soCotToiDa:
