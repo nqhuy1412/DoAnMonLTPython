@@ -26,12 +26,68 @@ class QuanLyAnime:
             with open('nguoi_dung.json', 'w') as f:
                 json.dump({
                     "admin": {"mat_khau": "admin123", "vai_tro": "admin", "yeu_thich": []},
-                    "nguoi_dung": {"mat_khau": "user123", "vai_tro": "nguoi_dung", "yeu_thich": []}
+                    "nguoi_dung": {"mat_khau": "user123", "vai_tro": "user", "yeu_thich": []}
                 }, f, indent=4)
         if not os.path.exists('du_lieu_anime.json'):
             with open('du_lieu_anime.json', 'w') as f:
                 json.dump([], f)
 
+    def hienThiManHinhDangKy(self):
+        for widget in self.cuaSo.winfo_children():
+            widget.destroy()
+        self.nhanHinhNen = tk.Label(self.cuaSo)
+        self.nhanHinhNen.place(relx=0, rely=0, relwidth=1, relheight=1)
+        try:
+            self.anhHinhNen = self._taiHinhNen("a2.png", (1570, 900))
+            self.nhanHinhNen.configure(image=self.anhHinhNen)
+            self.nhanHinhNen.image = self.anhHinhNen
+            self.nhanHinhNen.lower()
+        except Exception as e:
+            messagebox.showerror("Lỗi", f"Không thể tải hình nền: {str(e)}")
+            return
+
+        khungDangKy = ttk.Frame(self.cuaSo)
+        khungDangKy.place(relx=0.5, rely=0.5, anchor='center')
+        try:
+            self.anhHinhNenKhungDangKy = self._taiHinhNen("a1.png", (300, 250))
+            tk.Label(khungDangKy, image=self.anhHinhNenKhungDangKy).grid(row=0, column=0, rowspan=5, columnspan=2, sticky="nsew")
+        except Exception as e:
+            messagebox.showerror("Lỗi", f"Không thể tải hình nền khung đăng ký: {str(e)}")
+            return
+
+        ttk.Label(khungDangKy, text="Tên người dùng:").grid(row=0, column=0, padx=5, pady=5)
+        oNhapTenNguoiDung = ttk.Entry(khungDangKy)
+        oNhapTenNguoiDung.grid(row=0, column=1, padx=5, pady=5)
+        ttk.Label(khungDangKy, text="Mật khẩu:").grid(row=1, column=0, padx=5, pady=5)
+        oNhapMatKhau = ttk.Entry(khungDangKy, show="*")
+        oNhapMatKhau.grid(row=1, column=1, padx=5, pady=5)
+        ttk.Label(khungDangKy, text="Xác nhận mật khẩu:").grid(row=2, column=0, padx=5, pady=5)
+        oNhapXacNhanMatKhau = ttk.Entry(khungDangKy, show="*")
+        oNhapXacNhanMatKhau.grid(row=2, column=1, padx=5, pady=5)
+
+        def dangKy():
+            ten, mk, xacNhan = oNhapTenNguoiDung.get(), oNhapMatKhau.get(), oNhapXacNhanMatKhau.get()
+            if not (ten and mk and xacNhan):
+                messagebox.showerror("Lỗi", "Vui lòng điền đầy đủ các trường")
+                return
+            if mk != xacNhan:
+                messagebox.showerror("Lỗi", "Mật khẩu không khớp")
+                return
+            with open('nguoi_dung.json', 'r') as f:
+                nguoiDung = json.load(f)
+            if ten in nguoiDung:
+                messagebox.showerror("Lỗi", "Tên người dùng đã tồn tại")
+                return
+            nguoiDung[ten] = {"mat_khau": mk, "vai_tro": "user", "yeu_thich": []}
+            with open('nguoi_dung.json', 'w') as f:
+                json.dump(nguoiDung, f, indent=4)
+            messagebox.showinfo("Thành công", "Đăng ký thành công!")
+            self.hienThiManHinhDangNhap()
+
+        ttk.Button(khungDangKy, text="Đăng ký", command=dangKy).grid(row=3, column=0, columnspan=2, pady=10)
+        ttk.Button(khungDangKy, text="Quay lại đăng nhập", command=self.hienThiManHinhDangNhap).grid(row=4, column=0, columnspan=2)
+
+    # The rest of the methods remain unchanged
     def hienThiManHinhTai(self):
         self.khungTai = ttk.Frame(self.cuaSo, style='Tai.TFrame')
         self.khungTai.place(relx=0, rely=0, relwidth=1, relheight=1)
@@ -96,61 +152,6 @@ class QuanLyAnime:
         oNhapMatKhau.grid(row=1, column=1, padx=5, pady=5)
         ttk.Button(khungDangNhap, text="Đăng nhập", command=lambda: self.dangNhap(oNhapTenNguoiDung.get(), oNhapMatKhau.get())).grid(row=2, column=0, columnspan=2, pady=10)
         ttk.Button(khungDangNhap, text="Đăng ký", command=self.hienThiManHinhDangKy).grid(row=3, column=0, columnspan=2)
-
-    def hienThiManHinhDangKy(self):
-        for widget in self.cuaSo.winfo_children():
-            widget.destroy()
-        self.nhanHinhNen = tk.Label(self.cuaSo)
-        self.nhanHinhNen.place(relx=0, rely=0, relwidth=1, relheight=1)
-        try:
-            self.anhHinhNen = self._taiHinhNen("a2.png", (1570, 900))
-            self.nhanHinhNen.configure(image=self.anhHinhNen)
-            self.nhanHinhNen.image = self.anhHinhNen
-            self.nhanHinhNen.lower()
-        except Exception as e:
-            messagebox.showerror("Lỗi", f"Không thể tải hình nền: {str(e)}")
-            return
-
-        khungDangKy = ttk.Frame(self.cuaSo)
-        khungDangKy.place(relx=0.5, rely=0.5, anchor='center')
-        try:
-            self.anhHinhNenKhungDangKy = self._taiHinhNen("a1.png", (300, 250))
-            tk.Label(khungDangKy, image=self.anhHinhNenKhungDangKy).grid(row=0, column=0, rowspan=5, columnspan=2, sticky="nsew")
-        except Exception as e:
-            messagebox.showerror("Lỗi", f"Không thể tải hình nền khung đăng ký: {str(e)}")
-            return
-
-        ttk.Label(khungDangKy, text="Tên người dùng:").grid(row=0, column=0, padx=5, pady=5)
-        oNhapTenNguoiDung = ttk.Entry(khungDangKy)
-        oNhapTenNguoiDung.grid(row=0, column=1, padx=5, pady=5)
-        ttk.Label(khungDangKy, text="Mật khẩu:").grid(row=1, column=0, padx=5, pady=5)
-        oNhapMatKhau = ttk.Entry(khungDangKy, show="*")
-        oNhapMatKhau.grid(row=1, column=1, padx=5, pady=5)
-        ttk.Label(khungDangKy, text="Xác nhận mật khẩu:").grid(row=2, column=0, padx=5, pady=5)
-        oNhapXacNhanMatKhau = ttk.Entry(khungDangKy, show="*")
-        oNhapXacNhanMatKhau.grid(row=2, column=1, padx=5, pady=5)
-
-        def dangKy():
-            ten, mk, xacNhan = oNhapTenNguoiDung.get(), oNhapMatKhau.get(), oNhapXacNhanMatKhau.get()
-            if not (ten and mk and xacNhan):
-                messagebox.showerror("Lỗi", "Vui lòng điền đầy đủ các trường")
-                return
-            if mk != xacNhan:
-                messagebox.showerror("Lỗi", "Mật khẩu không khớp")
-                return
-            with open('nguoi_dung.json', 'r') as f:
-                nguoiDung = json.load(f)
-            if ten in nguoiDung:
-                messagebox.showerror("Lỗi", "Tên người dùng đã tồn tại")
-                return
-            nguoiDung[ten] = {"mat_khau": mk, "vai_tro": "nguoi_dung", "yeu_thich": []}
-            with open('nguoi_dung.json', 'w') as f:
-                json.dump(nguoiDung, f, indent=4)
-            messagebox.showinfo("Thành công", "Đăng ký thành công!")
-            self.hienThiManHinhDangNhap()
-
-        ttk.Button(khungDangKy, text="Đăng ký", command=dangKy).grid(row=3, column=0, columnspan=2, pady=10)
-        ttk.Button(khungDangKy, text="Quay lại đăng nhập", command=self.hienThiManHinhDangNhap).grid(row=4, column=0, columnspan=2)
 
     def dangNhap(self, tenNguoiDung, matKhau):
         with open('nguoi_dung.json', 'r') as f:
@@ -225,18 +226,18 @@ class QuanLyAnime:
         khungQuanLy = ttk.Frame(self.cuaSo)
         khungQuanLy.pack(expand=True, fill='both', padx=10, pady=10)
         ttk.Label(khungQuanLy, text="Quản lý người dùng", font=('Arial', 16, 'bold')).pack(pady=10)
-
+    
         khungDanhSach = ttk.Frame(khungQuanLy)
         khungDanhSach.pack(expand=True, fill='both')
         khungCoTheCuon = self._taoKhungCuon(khungDanhSach)
-
+    
         try:
             with open('nguoi_dung.json', 'r') as f:
                 nguoiDung = json.load(f)
         except Exception as e:
             messagebox.showerror("Lỗi", f"Không thể đọc danh sách người dùng: {str(e)}")
             return
-
+    
         for hang, (tenNguoiDung, thongTin) in enumerate(nguoiDung.items()):
             khungNguoiDung = ttk.Frame(khungCoTheCuon, width=600)
             khungNguoiDung.grid(row=hang, column=0, padx=10, pady=5, sticky="ew")
@@ -244,11 +245,13 @@ class QuanLyAnime:
             khungVien = ttk.Frame(khungNguoiDung, style='The.TFrame')
             khungVien.pack(expand=True, fill='both', padx=5, pady=5)
             ttk.Label(khungVien, text=f"Tên người dùng: {tenNguoiDung}", font=('Arial', 12)).pack(anchor='w', padx=10)
-            ttk.Label(khungVien, text=f"Vai trò: {thongTin['vai_tro']}", font=('Arial', 12)).pack(anchor='w', padx=10)
+            # Ánh xạ vai trò "nguoi_dung" thành "user" khi hiển thị
+            vaiTroHienThi = "user" if thongTin['vai_tro'] == "nguoi_dung" else thongTin['vai_tro']
+            ttk.Label(khungVien, text=f"Vai trò: {vaiTroHienThi}", font=('Arial', 12)).pack(anchor='w', padx=10)
             ttk.Label(khungVien, text=f"Số anime yêu thích: {len(thongTin.get('yeu_thich', []))}", font=('Arial', 12)).pack(anchor='w', padx=10)
             if tenNguoiDung != self.nguoiDungHienTai:
                 ttk.Button(khungVien, text="Xóa", command=lambda t=tenNguoiDung: self.xoaNguoiDung(t)).pack(anchor='e', padx=10, pady=5)
-
+    
         khungNut = ttk.Frame(khungQuanLy)
         khungNut.pack(fill='x', pady=10)
         ttk.Button(khungNut, text="Quay lại", command=self.hienThiManHinhChinh).pack(side='right', padx=5)
