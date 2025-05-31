@@ -12,7 +12,7 @@ from functools import lru_cache
 class QuanLyAnime:
     def __init__(self):
         self.cuaSo = tk.Tk()
-        self.cuaSo.title("Quản Lý Anime")
+        self.cuaSo.title("Anime Manager")
         self.cuaSo.geometry("1200x800")
         self.cuaSo.resizable(True, True)
         self.khoiTaoTepDuLieu()
